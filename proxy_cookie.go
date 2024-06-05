@@ -126,7 +126,9 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 
 	// Add new cookie with modified path and domain
 	for _, cookie := range cookies {
+		fmt.Println("Found:" + cookie.Name)
 		if cookie.Name == "session_id" {
+			fmt.Println("Replace:" + cookie.Name)
 			// add the prefix if any defined
 			if len(r.pathPrefix) > 0 {
 				cookie.Path = prefixPath(cookie.Path, r.pathPrefix)
