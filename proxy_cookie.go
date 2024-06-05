@@ -137,7 +137,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 			fmt.Println("Replace Path from " + cookie.Path + "to " + r.pathRewrites[0].replacement)
 			cookie.Path = handleRewrites(cookie.Path, r.pathRewrites)
 			// rewrite the domain
-			fmt.Println("Replace Domain from " + cookie.Domain + "to " + r.r.domainRewrites[0].replacement)
+			fmt.Println("Replace Domain from " + cookie.Domain + "to " + r.domainRewrites[0].replacement)
 			cookie.Domain = handleRewrites(cookie.Domain, r.domainRewrites)
 
 			http.SetCookie(r, cookie)
