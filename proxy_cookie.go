@@ -134,13 +134,9 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 				cookie.Path = prefixPath(cookie.Path, r.pathPrefix)
 			}
 			// rewrite the path
-			if len(r.pathRewrites) > 0 {
-				cookie.Path = handleRewrites(cookie.Path, r.pathRewrites)
-			}
+			cookie.Path = handleRewrites(cookie.Path, r.pathRewrites)
 			// rewrite the domain
-			if len(r.domainRewrites) > 0 {
-				cookie.Domain = handleRewrites(cookie.Domain, r.domainRewrites)
-			}
+			cookie.Domain = handleRewrites(cookie.Domain, r.domainRewrites)
 
 			http.SetCookie(r, cookie)
 		}
