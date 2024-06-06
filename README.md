@@ -1,3 +1,6 @@
+# Fork from https://github.com/SchmitzDan/traefik-plugin-proxy-cookie
+
+
 # Proxy Cookie Plugin
 
 Proxy Cookie Plugin is a middleware plugin for [Traefik](https://traefik.io) which adds the functionylity of the proxy_cookie directives known from NGINX to Traefik.
