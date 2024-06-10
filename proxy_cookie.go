@@ -89,10 +89,11 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 	r.writer.Header().Del(setCookieHeader)
 
 	fmt.Println("Set new cookie")
-	fmt.Println(req.Request.URL.Query().Get("token"))
-	fmt.Println(req.Request.URL.Query().Get("stage_url"))
-	cookie1 := http.Cookie{Name: "session_id", Value: req.Request.URL.Query().Get("token"), Domain: req.Request.URL.Query().Get("stage_url")}
-	http.SetCookie(r, &cookie1)
-
+	if req.Request.URL.Query().Has("token") {
+		fmt.Println(req.Request.URL.Query().Get("token"))
+		fmt.Println(req.Request.URL.Query().Get("stage_url"))
+		cookie1 := http.Cookie{Name: "session_id", Value: req.Request.URL.Query().Get("token"), Domain: req.Request.URL.Query().Get("stage_url")}
+		http.SetCookie(r, &cookie1)
+	}
 	r.writer.WriteHeader(statusCode)
 }
