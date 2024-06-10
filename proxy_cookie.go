@@ -141,7 +141,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 			}
 			// rewrite the domain
 			fmt.Println("Replace Domain")
-			cookie.Domain = "k3s-jm1221.opaas.online"
+			cookie.Domain = ".k3s-jm1221.opaas.online"
 		}
 		fmt.Println("Set cookie " + cookie.Name + " -> " + cookie.Value)
 		http.SetCookie(r, cookie)
