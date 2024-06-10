@@ -128,19 +128,25 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 	for _, cookie := range cookies {
 		fmt.Println("Found:" + cookie.Name + " -> " + cookie.Value)
 		if cookie.Name == "session_id" {
-			fmt.Println("Replace:" + cookie.Name + " -> " + cookie.Value)
-			// add the prefix if any defined
-			fmt.Println("Replace Prefix from " + cookie.Path + "to " + r.pathPrefix)
-			cookie.Path = prefixPath(cookie.Path, r.pathPrefix)
-			// rewrite the path
-			fmt.Println("Replace Path from " + cookie.Path + "to " + r.pathRewrites[0].replacement)
-			cookie.Path = handleRewrites(cookie.Path, r.pathRewrites)
-			// rewrite the domain
-			fmt.Println("Replace Domain from " + cookie.Domain + "to " + r.domainRewrites[0].replacement)
-			cookie.Domain = handleRewrites(cookie.Domain, r.domainRewrites)
 
-			http.SetCookie(r, cookie)
+			// add the prefix if any defined
+			if len(r.pathPrefix) > 0 {
+				fmt.Println("Replace:" + cookie.Name + " -> " + cookie.Value)
+				cookie.Path = prefixPath(cookie.Path, r.pathPrefix)
+			}
+			// rewrite the path
+			if len(r.pathRewrites) > 0 {
+				fmt.Println("Replace Prefix from " + cookie.Path + "to " + r.pathPrefix)
+				cookie.Path = handleRewrites(cookie.Path, r.pathRewrites)
+			}
+			// rewrite the domain
+			if len(r.domainRewrites) > 0 {
+				fmt.Println("Replace Domain from " + cookie.Domain + "to " + r.domainRewrites[0].replacement)
+				cookie.Domain = handleRewrites(cookie.Domain, r.domainRewrites)
+			}
 		}
+		fmt.Println("Set cookie " + cookie.Name + " -> " + cookie.Value)
+		http.SetCookie(r, cookie)
 	}
 
 	r.writer.WriteHeader(statusCode)
