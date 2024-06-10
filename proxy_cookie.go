@@ -91,12 +91,11 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 	r.writer.Header().Del(setCookieHeader)
 
 	for _, cookie := range cookies {
-		for _, rewrite := range r.rewrites {
-			if cookie.Name == rewrite.name {
-				fmt.Println("Set new cookie")
-				cookie1 := http.Cookie{Name: "session_id", Value: cookie.Value, Domain: ".k3s-jm1221.opaas.online"}
-				http.SetCookie(r, &cookie1)
-			}
+		fmt.Println("Search for cookie")
+		if cookie.Name == "session_id" {
+			fmt.Println("Set new cookie")
+			cookie1 := http.Cookie{Name: "session_id", Value: cookie.Value, Domain: ".k3s-jm1221.opaas.online"}
+			http.SetCookie(r, &cookie1)
 		}
 		http.SetCookie(r, cookie)
 	}
