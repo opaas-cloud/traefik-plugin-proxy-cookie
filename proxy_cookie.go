@@ -86,14 +86,14 @@ func (r *responseWriter) Write(bytes []byte) (int, error) {
 func (r *responseWriter) WriteHeader(statusCode int) {
 	headers := r.writer.Header()
 	req := http.Response{Header: headers}
-	r.writer.Header().Del(setCookieHeader)
 
 	fmt.Println("Set new cookie")
 	if req.Request.URL.Query().Has("token") {
+		r.writer.Header().Del(setCookieHeader)
 		fmt.Println(req.Request.URL.Query().Get("token"))
 		fmt.Println(req.Request.URL.Query().Get("stage_url"))
-		cookie1 := http.Cookie{Name: "session_id", Value: req.Request.URL.Query().Get("token"), Domain: req.Request.URL.Query().Get("stage_url")}
-		http.SetCookie(r, &cookie1)
+		cookie := http.Cookie{Name: "session_id", Value: req.Request.URL.Query().Get("token"), Domain: req.Request.URL.Query().Get("stage_url")}
+		http.SetCookie(r, &cookie)
 	}
 	r.writer.WriteHeader(statusCode)
 }
