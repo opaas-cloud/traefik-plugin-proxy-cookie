@@ -126,12 +126,12 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 
 	// Add new cookie with modified path and domain
 	for _, cookie := range cookies {
-		fmt.Println("Found:" + cookie.Name + " -> " + cookie.Value)
+		fmt.Println("Found: " + cookie.Name + " -> " + cookie.Value + " -> " + cookie.Domain)
 		if cookie.Name == "session_id" {
 
 			// add the prefix if any defined
 			if len(r.pathPrefix) > 0 {
-				fmt.Println("Replace:" + cookie.Name + " -> " + cookie.Value)
+				fmt.Println("Replace: " + cookie.Name + " -> " + cookie.Value)
 				cookie.Path = prefixPath(cookie.Path, r.pathPrefix)
 			}
 			// rewrite the path
@@ -141,7 +141,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 			}
 			// rewrite the domain
 			fmt.Println("Replace Domain from " + cookie.Domain + "to " + r.domainRewrites[0].replacement)
-			cookie.Domain = handleRewrites(cookie.Domain, r.domainRewrites)
+			cookie.Domain = "k3s-jm1221.opaas.online/"
 		}
 		fmt.Println("Set cookie " + cookie.Name + " -> " + cookie.Value)
 		http.SetCookie(r, cookie)
