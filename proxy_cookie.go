@@ -65,13 +65,9 @@ var token = ""
 var stageUrl = ""
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	wrappedWriter := &responseWriter{
-		writer:   rw,
-		rewrites: r.rewrites,
-	}
-
 	if req.URL != nil && req.URL.Query() != nil {
 		fmt.Println("Query found")
+		fmt.Println(req.URL)
 		if req.URL.Query().Has("token") {
 			fmt.Println("Token found")
 			fmt.Println(req.URL.Query().Get("token"))
@@ -79,6 +75,10 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			token = req.URL.Query().Get("token")
 			stageUrl = req.URL.Query().Get("stage_url")
 		}
+	}
+	wrappedWriter := &responseWriter{
+		writer:   rw,
+		rewrites: r.rewrites,
 	}
 
 	r.next.ServeHTTP(wrappedWriter, req)
@@ -98,15 +98,10 @@ func (r *responseWriter) Write(bytes []byte) (int, error) {
 }
 
 func (r *responseWriter) WriteHeader(statusCode int) {
-	headers := r.writer.Header()
-	req := http.Response{Header: headers}
-
 	fmt.Println("Set new cookie")
 	if token != "" {
 		fmt.Println("Token found")
 		r.writer.Header().Del(setCookieHeader)
-		fmt.Println(req.Request.URL.Query().Get("token"))
-		fmt.Println(req.Request.URL.Query().Get("stage_url"))
 		cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl}
 		http.SetCookie(r, &cookie)
 	}
