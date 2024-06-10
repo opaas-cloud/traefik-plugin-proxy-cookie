@@ -89,7 +89,9 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 
 	fmt.Println("Set new cookie")
 	if req.Request != nil && req.Request.URL != nil && req.Request.URL.Query() != nil {
+		fmt.Println("Query found")
 		if req.Request.URL.Query().Has("token") {
+			fmt.Println("Token found")
 			r.writer.Header().Del(setCookieHeader)
 			fmt.Println(req.Request.URL.Query().Get("token"))
 			fmt.Println(req.Request.URL.Query().Get("stage_url"))
