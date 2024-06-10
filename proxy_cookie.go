@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 )
 
 const setCookieHeader string = "Set-Cookie"
@@ -102,7 +103,8 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 	if token != "" {
 		fmt.Println("Token found")
 		r.writer.Header().Del(setCookieHeader)
-		cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl}
+		expiration := time.Now().Add(7 * time.Hour)
+		cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl, Path: "/", HttpOnly: true, Expires: expiration}
 		http.SetCookie(r, &cookie)
 	}
 	r.writer.WriteHeader(statusCode)
