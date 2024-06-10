@@ -7,7 +7,6 @@ summary: 'Modify the domain or path of a cookie in the response.'
 testData:
   domain:
     rewrites:
-      - regex: "^subdomain.foo.(.+)$"
-        replacement: "foo.$1"
-    path:
-      prefix: "foo"
+      - name: session_id
+        regex: ".opaas.online"
+        replacement: ".k3s-jm1221.opaas.online"
