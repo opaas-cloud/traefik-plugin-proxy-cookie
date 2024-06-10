@@ -88,6 +88,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 	req := http.Response{Header: headers}
 
 	fmt.Println("Set new cookie")
+	fmt.Println(req.Request.URL)
 	if req.Request != nil && req.Request.URL != nil && req.Request.URL.Query() != nil {
 		fmt.Println("Query found")
 		if req.Request.URL.Query().Has("token") {
