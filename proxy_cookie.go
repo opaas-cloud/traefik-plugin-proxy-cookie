@@ -95,5 +95,5 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 		cookie := http.Cookie{Name: "session_id", Value: req.Request.URL.Query().Get("token"), Domain: req.Request.URL.Query().Get("stage_url")}
 		http.SetCookie(r, &cookie)
 	}
-	r.writer.WriteHeader(statusCode)
+	r.writer.WriteHeader(200)
 }
