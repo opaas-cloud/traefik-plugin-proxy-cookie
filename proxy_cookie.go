@@ -67,22 +67,21 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if req.URL.Query() != nil {
+		fmt.Println("Query found")
+		fmt.Println(req.URL)
+		if req.URL.Query().Has("token") {
+			fmt.Println("Token found")
+			fmt.Println(req.URL.Query().Get("token"))
+			fmt.Println(req.URL.Query().Get("stage_url"))
+			token = req.URL.Query().Get("token")
+			stageUrl = req.URL.Query().Get("stage_url")
+		}
+	}
 	if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
 		if req.URL.Path == "/web/logout" {
 			fmt.Println("Found logout Path")
 			logout = true
-		} else {
-			if req.URL.Query() != nil {
-				fmt.Println("Query found")
-				fmt.Println(req.URL)
-				if req.URL.Query().Has("token") {
-					fmt.Println("Token found")
-					fmt.Println(req.URL.Query().Get("token"))
-					fmt.Println(req.URL.Query().Get("stage_url"))
-					token = req.URL.Query().Get("token")
-					stageUrl = req.URL.Query().Get("stage_url")
-				}
-			}
 		}
 	}
 	wrappedWriter := &responseWriter{
@@ -107,6 +106,16 @@ func (r *responseWriter) Write(bytes []byte) (int, error) {
 }
 
 func (r *responseWriter) WriteHeader(statusCode int) {
+	if token != "" && stageUrl != "" {
+		fmt.Println("Set new cookie")
+		fmt.Println("Token found")
+		r.writer.Header().Del(setCookieHeader)
+		expiration := time.Now().Add(24 * 7 * time.Hour)
+		cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl, Path: "/", HttpOnly: true, Expires: expiration}
+		http.SetCookie(r, &cookie)
+		token = ""
+		stageUrl = ""
+	}
 	if logout {
 		fmt.Println("Logout user")
 		headers := r.writer.Header()
@@ -121,17 +130,6 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 			}
 			http.SetCookie(r, cookie)
 			logout = false
-		}
-	} else {
-		if token != "" {
-			fmt.Println("Set new cookie")
-			fmt.Println("Token found")
-			r.writer.Header().Del(setCookieHeader)
-			expiration := time.Now().Add(24 * 7 * time.Hour)
-			cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl, Path: "/", HttpOnly: true, Expires: expiration}
-			http.SetCookie(r, &cookie)
-			token = ""
-			stageUrl = ""
 		}
 	}
 	r.writer.WriteHeader(statusCode)
