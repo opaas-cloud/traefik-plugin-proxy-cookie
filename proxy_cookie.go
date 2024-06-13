@@ -68,29 +68,33 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.URL.Query() != nil {
-		fmt.Println("Query found")
-		fmt.Println(req.URL)
-		if req.URL.Query().Has("token") {
-			fmt.Println("Token found")
-			fmt.Println(req.URL.Query().Get("token"))
-			fmt.Println(req.URL.Query().Get("stage_url"))
-			token = req.URL.Query().Get("token")
-			stageUrl = req.URL.Query().Get("stage_url")
+	if req.Method == "GET" {
+		if req.URL.Query() != nil {
+			fmt.Println("Query found")
+			fmt.Println(req.URL)
+			if req.URL.Query().Has("token") {
+				fmt.Println("Token found")
+				fmt.Println(req.URL.Query().Get("token"))
+				fmt.Println(req.URL.Query().Get("stage_url"))
+				token = req.URL.Query().Get("token")
+				stageUrl = req.URL.Query().Get("stage_url")
+			}
 		}
-	}
-	if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
-		if strings.Contains(req.URL.Path, "/web/session/logout") {
-			fmt.Println("Found logout Path")
-			logout = true
+		if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
+			if strings.Contains(req.URL.Path, "/web/session/logout") {
+				fmt.Println("Found logout Path")
+				logout = true
+			}
 		}
-	}
-	wrappedWriter := &responseWriter{
-		writer:   rw,
-		rewrites: r.rewrites,
-	}
+		wrappedWriter := &responseWriter{
+			writer:   rw,
+			rewrites: r.rewrites,
+		}
 
-	r.next.ServeHTTP(wrappedWriter, req)
+		r.next.ServeHTTP(wrappedWriter, req)
+	} else {
+		fmt.Println("POST METHOD")
+	}
 }
 
 type responseWriter struct {
@@ -107,35 +111,39 @@ func (r *responseWriter) Write(bytes []byte) (int, error) {
 }
 
 func (r *responseWriter) WriteHeader(statusCode int) {
-	if token != "" && stageUrl != "" {
-		fmt.Println("Set new cookie")
-		fmt.Println("Token found")
-		r.writer.Header().Del(setCookieHeader)
-		expiration := time.Now().Add(24 * 7 * time.Hour)
-		cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
-		http.SetCookie(r, &cookie)
-		token = ""
-		stageUrl = ""
-	}
-	if logout {
-		fmt.Println("Logout user")
-		headers := r.writer.Header()
-		req := http.Response{Header: headers}
-		cookies := req.Cookies()
+	headers := r.writer.Header()
+	req := http.Response{Header: headers}
+	if req.Request.Method == "GET" {
+		if token != "" && stageUrl != "" {
+			fmt.Println("Set new cookie")
+			fmt.Println("Token found")
+			r.writer.Header().Del(setCookieHeader)
+			expiration := time.Now().Add(24 * 7 * time.Hour)
+			cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
+			http.SetCookie(r, &cookie)
+			token = ""
+			stageUrl = ""
+		}
+		if logout {
+			fmt.Println("Logout user")
+			cookies := req.Cookies()
 
-		r.writer.Header().Del(setCookieHeader)
+			r.writer.Header().Del(setCookieHeader)
 
-		for _, cookie := range cookies {
-			if cookie.Name == "session_id" {
-				fmt.Println("Found cookie session_id")
-				if cookie.MaxAge != -1 {
-					fmt.Println("Set cookie age to -1")
-					cookie.MaxAge = -1
-					http.SetCookie(r, cookie)
+			for _, cookie := range cookies {
+				if cookie.Name == "session_id" {
+					fmt.Println("Found cookie session_id")
+					if cookie.MaxAge != -1 {
+						fmt.Println("Set cookie age to -1")
+						cookie.MaxAge = -1
+						http.SetCookie(r, cookie)
+					}
 				}
 			}
+			logout = false
 		}
-		logout = false
+	} else {
+		fmt.Println("POST METHOD")
 	}
 	r.writer.WriteHeader(statusCode)
 }
