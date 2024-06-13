@@ -126,7 +126,11 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 
 		for _, cookie := range cookies {
 			if cookie.Name == "session_id" {
-				cookie.MaxAge = -1
+				fmt.Println("Found cookie session_id")
+				if cookie.MaxAge != -1 {
+					fmt.Println("Set cookie age to -1")
+					cookie.MaxAge = -1
+				}
 			}
 			http.SetCookie(r, cookie)
 			logout = false
