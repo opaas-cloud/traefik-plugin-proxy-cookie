@@ -112,7 +112,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 		fmt.Println("Token found")
 		r.writer.Header().Del(setCookieHeader)
 		expiration := time.Now().Add(24 * 7 * time.Hour)
-		cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl, Path: "/", HttpOnly: true, Expires: expiration}
+		cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
 		http.SetCookie(r, &cookie)
 		token = ""
 		stageUrl = ""
