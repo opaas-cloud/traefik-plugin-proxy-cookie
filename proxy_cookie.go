@@ -118,9 +118,9 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 		for _, cookie := range cookies {
 			if cookie.Name == "session_id" {
 				cookie.MaxAge = -1
-				cookie.Expires = time.Now()
 			}
 			http.SetCookie(r, cookie)
+			logout = false
 		}
 	} else {
 		if token != "" {
