@@ -86,15 +86,15 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				logout = true
 			}
 		}
-		wrappedWriter := &responseWriter{
-			writer:   rw,
-			rewrites: r.rewrites,
-		}
 
-		r.next.ServeHTTP(wrappedWriter, req)
 	} else {
 		fmt.Println("POST METHOD")
 	}
+	wrappedWriter := &responseWriter{
+		writer:   rw,
+		rewrites: r.rewrites,
+	}
+	r.next.ServeHTTP(wrappedWriter, req)
 }
 
 type responseWriter struct {
