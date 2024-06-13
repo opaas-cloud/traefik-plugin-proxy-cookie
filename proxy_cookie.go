@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -79,7 +80,7 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 	if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
-		if req.URL.Path == "/web/logout" {
+		if strings.Contains(req.URL.Path, "/web/session/logout") {
 			fmt.Println("Found logout Path")
 			logout = true
 		}
@@ -130,11 +131,11 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 				if cookie.MaxAge != -1 {
 					fmt.Println("Set cookie age to -1")
 					cookie.MaxAge = -1
+					http.SetCookie(r, cookie)
 				}
 			}
-			http.SetCookie(r, cookie)
-			logout = false
 		}
+		logout = false
 	}
 	r.writer.WriteHeader(statusCode)
 }
