@@ -67,7 +67,7 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.URL != nil {
+	if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
 		if req.URL.Path == "/web/logout" {
 			fmt.Println("Found logout Path")
 			logout = true
