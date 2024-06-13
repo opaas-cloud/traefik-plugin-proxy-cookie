@@ -111,39 +111,41 @@ func (r *responseWriter) Write(bytes []byte) (int, error) {
 }
 
 func (r *responseWriter) WriteHeader(statusCode int) {
-	headers := r.writer.Header()
-	req := http.Response{Header: headers}
-	if req.Request.Method == "GET" {
-		if token != "" && stageUrl != "" {
-			fmt.Println("Set new cookie")
-			fmt.Println("Token found")
-			r.writer.Header().Del(setCookieHeader)
-			expiration := time.Now().Add(24 * 7 * time.Hour)
-			cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
-			http.SetCookie(r, &cookie)
-			token = ""
-			stageUrl = ""
-		}
-		if logout {
-			fmt.Println("Logout user")
-			cookies := req.Cookies()
+	if r.writer != nil && r.writer.Header() != nil {
+		headers := r.writer.Header()
+		req := http.Response{Header: headers}
+		if req.Request.Method == "GET" {
+			if token != "" && stageUrl != "" {
+				fmt.Println("Set new cookie")
+				fmt.Println("Token found")
+				r.writer.Header().Del(setCookieHeader)
+				expiration := time.Now().Add(24 * 7 * time.Hour)
+				cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
+				http.SetCookie(r, &cookie)
+				token = ""
+				stageUrl = ""
+			}
+			if logout {
+				fmt.Println("Logout user")
+				cookies := req.Cookies()
 
-			r.writer.Header().Del(setCookieHeader)
+				r.writer.Header().Del(setCookieHeader)
 
-			for _, cookie := range cookies {
-				if cookie.Name == "session_id" {
-					fmt.Println("Found cookie session_id")
-					if cookie.MaxAge != -1 {
-						fmt.Println("Set cookie age to -1")
-						cookie.MaxAge = -1
-						http.SetCookie(r, cookie)
+				for _, cookie := range cookies {
+					if cookie.Name == "session_id" {
+						fmt.Println("Found cookie session_id")
+						if cookie.MaxAge != -1 {
+							fmt.Println("Set cookie age to -1")
+							cookie.MaxAge = -1
+							http.SetCookie(r, cookie)
+						}
 					}
 				}
+				logout = false
 			}
-			logout = false
+		} else {
+			fmt.Println("POST METHOD")
 		}
-	} else {
-		fmt.Println("POST METHOD")
 	}
 	r.writer.WriteHeader(statusCode)
 }
