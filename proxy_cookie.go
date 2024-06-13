@@ -130,6 +130,8 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 			expiration := time.Now().Add(24 * 7 * time.Hour)
 			cookie := http.Cookie{Name: "session_id", Value: token, Domain: stageUrl, Path: "/", HttpOnly: true, Expires: expiration}
 			http.SetCookie(r, &cookie)
+			token = ""
+			stageUrl = ""
 		}
 	}
 	r.writer.WriteHeader(statusCode)
