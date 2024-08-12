@@ -69,17 +69,20 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	hijacker, ok := rw.(http.Hijacker)
-	if !ok {
-		http.Error(rw, "Hijacking not supported", http.StatusInternalServerError)
+	if strings.Contains(req.URL.Path, "/websocket") {
+		hijacker, ok := rw.(http.Hijacker)
+		if !ok {
+			http.Error(rw, "Hijacking not supported", http.StatusInternalServerError)
+			return
+		}
+		conn, _, err := hijacker.Hijack()
+		if err != nil {
+			log.Println("Hijack failed:", err)
+			return
+		}
+		defer conn.Close()
 		return
 	}
-	conn, _, err := hijacker.Hijack()
-	if err != nil {
-		log.Println("Hijack failed:", err)
-		return
-	}
-	defer conn.Close()
 	if req.Method != "GET" {
 		wrappedWriter := &responseWriter{
 			writer:   rw,
