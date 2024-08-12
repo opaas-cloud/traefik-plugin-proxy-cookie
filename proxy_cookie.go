@@ -68,7 +68,7 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.Method == "POST" {
+	if req.Method != "GET" {
 		wrappedWriter := &responseWriter{
 			writer:   rw,
 			rewrites: r.rewrites,
