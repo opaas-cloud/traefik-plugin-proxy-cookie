@@ -4,7 +4,6 @@ package traefik_plugin_proxy_cookie //nolint
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -70,17 +69,6 @@ var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if strings.Contains(req.URL.Path, "/websocket") {
-		hijacker, ok := rw.(http.Hijacker)
-		if !ok {
-			http.Error(rw, "Hijacking not supported", http.StatusInternalServerError)
-			return
-		}
-		conn, _, err := hijacker.Hijack()
-		if err != nil {
-			log.Println("Hijack failed:", err)
-			return
-		}
-		defer conn.Close()
 		return
 	}
 	if req.Method != "GET" {
