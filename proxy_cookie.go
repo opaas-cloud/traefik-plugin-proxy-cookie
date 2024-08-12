@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -28,38 +27,15 @@ func CreateConfig() *Config {
 	return &Config{}
 }
 
-type rewrite struct {
-	name        string
-	regex       *regexp.Regexp
-	replacement string
-}
-
 type rewriteBody struct {
-	name     string
-	next     http.Handler
-	rewrites []rewrite
+	name string
+	next http.Handler
 }
 
-func New(_ context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
-	rewrites := make([]rewrite, len(config.Rewrites))
-
-	for i, rewriteConfig := range config.Rewrites {
-		regex, err := regexp.Compile(rewriteConfig.Regex)
-		if err != nil {
-			return nil, fmt.Errorf("error compiling regex %q: %w", rewriteConfig.Regex, err)
-		}
-
-		rewrites[i] = rewrite{
-			name:        rewriteConfig.Name,
-			regex:       regex,
-			replacement: rewriteConfig.Replacement,
-		}
-	}
-
+func New(_ context.Context, next http.Handler, _ *Config, name string) (http.Handler, error) {
 	return &rewriteBody{
-		name:     name,
-		next:     next,
-		rewrites: rewrites,
+		name: name,
+		next: next,
 	}, nil
 }
 
@@ -68,44 +44,30 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if strings.Contains(req.URL.Path, "/websocket") {
-		return
-	}
-	if req.Method != "GET" {
-		wrappedWriter := &responseWriter{
-			writer:   rw,
-			rewrites: r.rewrites,
+	if req.Method == "GET" {
+		if req.URL.Query() != nil {
+			fmt.Println("Query found")
+			fmt.Println(req.URL)
+			if req.URL.Query().Has("token") {
+				fmt.Println("Token found")
+				fmt.Println(req.URL.Query().Get("token"))
+				fmt.Println(req.URL.Query().Get("stage_url"))
+				token = req.URL.Query().Get("token")
+				stageUrl = req.URL.Query().Get("stage_url")
+			}
 		}
-		r.next.ServeHTTP(wrappedWriter, req)
-		return
-	}
-	if req.URL.Query() != nil {
-		fmt.Println("Query found")
-		fmt.Println(req.URL)
-		if req.URL.Query().Has("token") {
-			fmt.Println("Token found")
-			fmt.Println(req.URL.Query().Get("token"))
-			fmt.Println(req.URL.Query().Get("stage_url"))
-			token = req.URL.Query().Get("token")
-			stageUrl = req.URL.Query().Get("stage_url")
+		if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
+			if strings.Contains(req.URL.Path, "/web/session/logout") {
+				fmt.Println("Found logout Path")
+				logout = true
+			}
 		}
+		r.next.ServeHTTP(rw, req)
 	}
-	if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
-		if strings.Contains(req.URL.Path, "/web/session/logout") {
-			fmt.Println("Found logout Path")
-			logout = true
-		}
-	}
-	wrappedWriter := &responseWriter{
-		writer:   rw,
-		rewrites: r.rewrites,
-	}
-	r.next.ServeHTTP(wrappedWriter, req)
 }
 
 type responseWriter struct {
-	writer   http.ResponseWriter
-	rewrites []rewrite
+	writer http.ResponseWriter
 }
 
 func (r *responseWriter) Header() http.Header {
