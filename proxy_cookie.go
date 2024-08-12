@@ -4,6 +4,7 @@ package traefik_plugin_proxy_cookie //nolint
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -68,6 +69,17 @@ var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	hijacker, ok := rw.(http.Hijacker)
+	if !ok {
+		http.Error(rw, "Hijacking not supported", http.StatusInternalServerError)
+		return
+	}
+	conn, _, err := hijacker.Hijack()
+	if err != nil {
+		log.Println("Hijack failed:", err)
+		return
+	}
+	defer conn.Close()
 	if req.Method != "GET" {
 		wrappedWriter := &responseWriter{
 			writer:   rw,
@@ -97,7 +109,6 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		writer:   rw,
 		rewrites: r.rewrites,
 	}
-
 	r.next.ServeHTTP(wrappedWriter, req)
 }
 
