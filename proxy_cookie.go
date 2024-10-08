@@ -60,7 +60,12 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				logout = true
 			}
 		}
-		r.next.ServeHTTP(rw, req)
+
+		wrappedWriter := &responseWriter{
+			writer: rw,
+		}
+
+		r.next.ServeHTTP(wrappedWriter, req)
 	}
 	if req.Method == "POST" || req.Method == "OPTIONS" {
 		r.next.ServeHTTP(rw, req)
