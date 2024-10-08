@@ -40,7 +40,6 @@ func New(_ context.Context, next http.Handler, _ *Config, name string) (http.Han
 }
 
 var token = ""
-var stageUrl = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -53,7 +52,6 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				fmt.Println(req.URL.Query().Get("token"))
 				fmt.Println(req.URL.Query().Get("stage_url"))
 				token = req.URL.Query().Get("token")
-				stageUrl = req.URL.Query().Get("stage_url")
 			}
 		}
 		if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
@@ -82,7 +80,7 @@ func (r *responseWriter) Write(bytes []byte) (int, error) {
 }
 
 func (r *responseWriter) WriteHeader(statusCode int) {
-	if token != "" && stageUrl != "" {
+	if token != "" {
 		fmt.Println("Set new cookie")
 		fmt.Println("Token found")
 		r.writer.Header().Del(setCookieHeader)
@@ -90,7 +88,6 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 		cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
 		http.SetCookie(r, &cookie)
 		token = ""
-		stageUrl = ""
 	}
 	if logout {
 		fmt.Println("Logout user")
