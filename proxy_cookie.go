@@ -43,32 +43,38 @@ var token = ""
 var logout = false
 
 func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.Method == "GET" {
-		if req.URL.Query() != nil {
-			fmt.Println("Query found")
-			fmt.Println(req.URL)
-			if req.URL.Query().Has("token") {
-				fmt.Println("Token found")
-				fmt.Println(req.URL.Query().Get("token"))
-				fmt.Println(req.URL.Query().Get("stage_url"))
-				token = req.URL.Query().Get("token")
-			}
-		}
-		if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
-			if strings.Contains(req.URL.Path, "/web/session/logout") {
-				fmt.Println("Found logout Path")
-				logout = true
-			}
-		}
-
-		wrappedWriter := &responseWriter{
-			writer: rw,
-		}
-
-		r.next.ServeHTTP(wrappedWriter, req)
-	}
-	if req.Method == "POST" || req.Method == "OPTIONS" {
+	if req.Header.Get("Connection") == "Upgrade" && req.Header.Get("Upgrade") == "websocket" {
+		// Add or log custom behavior for WebSocket connections if needed
+		rw.Header().Set("X-WebSocket-Allowed", "true")
 		r.next.ServeHTTP(rw, req)
+	} else {
+		if req.Method == "GET" {
+			if req.URL.Query() != nil {
+				fmt.Println("Query found")
+				fmt.Println(req.URL)
+				if req.URL.Query().Has("token") {
+					fmt.Println("Token found")
+					fmt.Println(req.URL.Query().Get("token"))
+					fmt.Println(req.URL.Query().Get("stage_url"))
+					token = req.URL.Query().Get("token")
+				}
+			}
+			if req.URL != nil && req.URL.Path != "" && req.URL.Path != "/" {
+				if strings.Contains(req.URL.Path, "/web/session/logout") {
+					fmt.Println("Found logout Path")
+					logout = true
+				}
+			}
+
+			wrappedWriter := &responseWriter{
+				writer: rw,
+			}
+
+			r.next.ServeHTTP(wrappedWriter, req)
+		}
+		if req.Method == "POST" || req.Method == "OPTIONS" {
+			r.next.ServeHTTP(rw, req)
+		}
 	}
 }
 
