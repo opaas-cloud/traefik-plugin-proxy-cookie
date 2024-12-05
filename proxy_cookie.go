@@ -48,7 +48,11 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("X-WebSocket-Allowed", "true")
 		r.next.ServeHTTP(rw, req)
 	} else {
+		if(req.
 		if req.Method == "GET" {
+			if(strings.Contains(req.URL.Path, "/websocket")) {
+				r.next.ServeHTTP(rw, req)
+			}
 			if req.URL.Query() != nil {
 				fmt.Println("Query found")
 				fmt.Println(req.URL)
