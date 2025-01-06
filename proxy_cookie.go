@@ -98,7 +98,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 	if token != "" {
 		fmt.Println("Set new cookie")
 		fmt.Println("Token found")
-		r.writer.Header().Del(setCookieHeader)
+		/*r.writer.Header().Del(setCookieHeader)*/
 		expiration := time.Now().Add(24 * 7 * time.Hour)
 		cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration, SameSite: http.SameSiteLaxMode, Secure: true}
 		http.SetCookie(r, &cookie)
