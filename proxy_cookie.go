@@ -51,6 +51,7 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if req.Method == "GET" {
 			if strings.Contains(req.URL.Path, "/websocket") {
 				r.next.ServeHTTP(rw, req)
+				return
 			}
 			if req.URL.Query() != nil {
 				fmt.Println("Query found")
