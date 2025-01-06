@@ -49,7 +49,7 @@ func (r *rewriteBody) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		r.next.ServeHTTP(rw, req)
 	} else {
 		if req.Method == "GET" {
-			if(strings.Contains(req.URL.Path, "/websocket")) {
+			if strings.Contains(req.URL.Path, "/websocket") {
 				r.next.ServeHTTP(rw, req)
 			}
 			if req.URL.Query() != nil {
@@ -99,7 +99,7 @@ func (r *responseWriter) WriteHeader(statusCode int) {
 		fmt.Println("Token found")
 		r.writer.Header().Del(setCookieHeader)
 		expiration := time.Now().Add(24 * 7 * time.Hour)
-		cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration}
+		cookie := http.Cookie{Name: "session_id", Value: token, Path: "/", HttpOnly: true, Expires: expiration, SameSite: http.SameSiteLaxMode, Secure: true}
 		http.SetCookie(r, &cookie)
 		token = ""
 	}
